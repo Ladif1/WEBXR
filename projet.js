@@ -389,9 +389,9 @@ infoMenu.style.zIndex = "1000";
 infoMenu.innerHTML = `
   <strong>Contrôles</strong>
   <ul style="margin: 5px 0 0 15px; padding: 0;">
-    <li>W / ↑ : Avancer</li>
+    <li>Z / ↑ : Avancer</li>
     <li>S / ↓ : Reculer</li>
-    <li>A / ← : Gauche</li>
+    <li>Q / ← : Gauche</li>
     <li>D / → : Droite</li>
     <li>Espace : Sauter</li>
     <li>Shift : Courir</li>
