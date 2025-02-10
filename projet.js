@@ -41,9 +41,7 @@ camera.add(listener);
 
 const controls = new PointerLockControls(camera, document.body);
 scene.add(controls.object);
-document.addEventListener("click", () => {
-    controls.lock();
-}, false);
+document.addEventListener("click", () => { controls.lock(); }, false);
 
 let moveForward = false,
     moveBackward = false,
@@ -119,41 +117,37 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let skipNextClick = false;
 
-// Fonction d'animation pour la soucoupe
 function animateSaucer(saucer) {
-    if (saucer.userData.isAnimating) return; // évite de relancer si l'animation est déjà en cours
+    if (saucer.userData.isAnimating) return;
     saucer.userData.isAnimating = true;
-    const originalZ = saucer.position.y;
-    const targetZ = originalZ + 5; // la soucoupe se soulève de 5 mètres
-    const duration = 2500; // durée (ms) pour la montée et la descente
-
+    const originalY = saucer.position.y;
+    const targetY = originalY + 500;
+    const duration = 2500;
     let startTime = null;
 
     function animateUp(timestamp) {
         if (!startTime) startTime = timestamp;
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        saucer.position.z = THREE.MathUtils.lerp(originalZ, targetZ, progress);
+        saucer.position.y = THREE.MathUtils.lerp(originalY, targetY, progress);
         if (progress < 1) {
             requestAnimationFrame(animateUp);
         } else {
             startTime = null;
-            setTimeout(() => requestAnimationFrame(animateDown), 1000); // on attend 1 seconde avant de redescendre
+            setTimeout(() => requestAnimationFrame(animateDown), 1000);
         }
     }
-
     function animateDown(timestamp) {
         if (!startTime) startTime = timestamp;
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        saucer.position.z = THREE.MathUtils.lerp(targetZ, originalZ, progress);
+        saucer.position.y = THREE.MathUtils.lerp(targetY, originalY, progress);
         if (progress < 1) {
             requestAnimationFrame(animateDown);
         } else {
             saucer.userData.isAnimating = false;
         }
     }
-
     requestAnimationFrame(animateUp);
 }
 
@@ -168,11 +162,11 @@ function onInteract(event) {
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(scene.children, true);
     if (intersects.length > 0) {
-        const object = intersects[0].object;
+        let object = intersects[0].object;
         if (object.userData.interactive) {
-            // Si c'est la soucoupe, on déclenche l'animation
-            if (object.name.startsWith("Cylinder007")) {
-                animateSaucer(object);
+            if (object.name.startsWith("Cylinder007") || (object.parent && object.parent.userData.isSaucer)) {
+                let saucerGroup = (object.parent && object.parent.userData.isSaucer) ? object.parent : object;
+                animateSaucer(saucerGroup);
             }
             const info = document.getElementById("info");
             if (info && object.userData.description) {
@@ -218,6 +212,9 @@ loader.load(
                 if (child.name.startsWith("Cylinder007")) {
                     child.userData.interactive = true;
                     child.userData.sound = getSound("soucoupeSound", "soucoupe.mp3");
+                    if (child.parent) {
+                        child.parent.userData.isSaucer = true;
+                    }
                 }
                 if (child.name.startsWith("Cube_")) {
                     child.userData.interactive = true;
